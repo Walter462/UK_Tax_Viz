@@ -3,7 +3,6 @@ try:
     from IMPORT import dash
     from dash import dcc, html, Input, Output, State
     from IMPORT import go
-    from IMPORT import gunicorn
     #local files
     from calculations import (Client)
 except ImportError:
@@ -63,17 +62,44 @@ app.layout = html.Div([
 ])
 
 @app.callback(
+    Output('other-uk-income-input', 'value'),
+    [Input('other-uk-income-slider', 'value')]
+)
+def update_other_uk_income_input(value):
+    return value
+
+@app.callback(
+    Output('profit-on-sales-input', 'value'),
+    [Input('profit-on-sales-slider', 'value')]
+)
+def update_profit_on_sales_input(value):
+    return value
+
+@app.callback(
+    Output('other-uk-income-slider', 'value'),
+    [Input('other-uk-income-input', 'value')]
+)
+def update_other_uk_income_slider(value):
+    return value
+
+@app.callback(
+    Output('profit-on-sales-slider', 'value'),
+    [Input('profit-on-sales-input', 'value')]
+)
+def update_profit_on_sales_slider(value):
+    return value
+
+@app.callback(
     [Output('other-uk-income-output', 'children'),
      Output('profit-on-sales-output', 'children'),
-     Output('tax-bar-chart', 'figure'),
-     Output('other-uk-income-slider', 'value'),
-     Output('profit-on-sales-slider', 'value')],
+     Output('tax-bar-chart', 'figure')],
     [Input('other-uk-income-slider', 'value'),
      Input('profit-on-sales-slider', 'value'),
      Input('other-uk-income-input', 'value'),
      Input('profit-on-sales-input', 'value')]
 )
 def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income_input, profit_on_sales_input):
+    # Include the existing update_chart code here
     other_uk_income = other_uk_income_input if other_uk_income_input is not None else other_uk_income_slider
     profit_on_sales = profit_on_sales_input if profit_on_sales_input is not None else profit_on_sales_slider
     
@@ -209,9 +235,7 @@ def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income
 
     return (f'Other UK Income: ${other_uk_income}', 
             f'Profit on Sales: ${profit_on_sales}', 
-            figure, 
-            other_uk_income, 
-            profit_on_sales)
+            figure)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
