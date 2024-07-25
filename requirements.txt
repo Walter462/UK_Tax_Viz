@@ -11,6 +11,7 @@ defusedxml==0.7.1
 Deprecated==1.2.14
 dirtyjson==1.0.8
 Flask==3.0.3
+gunicorn
 folium==0.14.0
 fonttools==4.39.3
 fqdn==1.5.1

@@ -17,6 +17,7 @@ for lib in libraries:
     install(lib)
 
 #data
+import gunicorn as gunicorn
 import pandas as pd
 import numpy as np
 from json import dumps
