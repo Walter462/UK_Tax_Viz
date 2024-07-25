@@ -10,6 +10,8 @@ except ImportError:
 
 #app text
 app = dash.Dash(__name__)
+server = app.server
+
 client = Client('Example Client')
 app.layout = html.Div([
     html.H1('Tax Calculation Interactive Dashboard'),
