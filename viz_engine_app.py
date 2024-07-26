@@ -1,14 +1,13 @@
-
 try:
     from IMPORT import dash
     from dash import dcc, html, Input, Output, State
     from IMPORT import go
-    #local files
-    from calculations import (Client)
+    # local files
+    from calculations import Client
 except ImportError:
-    pass 
+    pass
 
-#app text
+# app text
 app = dash.Dash(__name__)
 server = app.server
 
@@ -58,36 +57,54 @@ app.layout = html.Div([
     ], style={'margin-top': 20}),
     html.Div(id='profit-on-sales-output', style={'margin-top': 20}),
     
-    dcc.Graph(id='tax-bar-chart')
+    dcc.Graph(id='tax-bar-chart'),
+    
+    dcc.Interval(
+        id='interval-component',
+        interval=1,  # in milliseconds
+        n_intervals=0  # only fires once
+    )
 ])
 
 @app.callback(
-    Output('other-uk-income-input', 'value'),
-    [Input('other-uk-income-slider', 'value')]
+    [Output('other-uk-income-slider', 'value'),
+     Output('other-uk-income-input', 'value')],
+    [Input('other-uk-income-slider', 'value'),
+     Input('other-uk-income-input', 'value')]
 )
-def update_other_uk_income_input(value):
-    return value
+def sync_other_uk_income(slider_value, input_value):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        raise dash.exceptions.PreventUpdate
+
+    trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    if trigger_id == 'other-uk-income-slider':
+        # Slider triggered
+        return slider_value, slider_value
+    elif trigger_id == 'other-uk-income-input':
+        # Input triggered
+        return input_value, input_value
 
 @app.callback(
-    Output('profit-on-sales-input', 'value'),
-    [Input('profit-on-sales-slider', 'value')]
+    [Output('profit-on-sales-slider', 'value'),
+     Output('profit-on-sales-input', 'value')],
+    [Input('profit-on-sales-slider', 'value'),
+     Input('profit-on-sales-input', 'value')]
 )
-def update_profit_on_sales_input(value):
-    return value
+def sync_profit_on_sales(slider_value, input_value):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        raise dash.exceptions.PreventUpdate
 
-@app.callback(
-    Output('other-uk-income-slider', 'value'),
-    [Input('other-uk-income-input', 'value')]
-)
-def update_other_uk_income_slider(value):
-    return value
+    trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-@app.callback(
-    Output('profit-on-sales-slider', 'value'),
-    [Input('profit-on-sales-input', 'value')]
-)
-def update_profit_on_sales_slider(value):
-    return value
+    if trigger_id == 'profit-on-sales-slider':
+        # Slider triggered
+        return slider_value, slider_value
+    elif trigger_id == 'profit-on-sales-input':
+        # Input triggered
+        return input_value, input_value
 
 @app.callback(
     [Output('other-uk-income-output', 'children'),
@@ -96,12 +113,17 @@ def update_profit_on_sales_slider(value):
     [Input('other-uk-income-slider', 'value'),
      Input('profit-on-sales-slider', 'value'),
      Input('other-uk-income-input', 'value'),
-     Input('profit-on-sales-input', 'value')]
+     Input('profit-on-sales-input', 'value'),
+     Input('interval-component', 'n_intervals')]
 )
-def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income_input, profit_on_sales_input):
-    # Include the existing update_chart code here
-    other_uk_income = other_uk_income_input if other_uk_income_input is not None else other_uk_income_slider
-    profit_on_sales = profit_on_sales_input if profit_on_sales_input is not None else profit_on_sales_slider
+def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income_input, profit_on_sales_input, n_intervals):
+    ctx = dash.callback_context
+    if not ctx.triggered or 'interval-component' in [trigger['prop_id'] for trigger in ctx.triggered]:
+        other_uk_income = 0
+        profit_on_sales = 65000
+    else:
+        other_uk_income = other_uk_income_input if other_uk_income_input is not None else other_uk_income_slider
+        profit_on_sales = profit_on_sales_input if profit_on_sales_input is not None else profit_on_sales_slider
     
     client.OtherUkIncome.set(other_uk_income)
     client.ProfitOnSales.set(profit_on_sales)
