@@ -12,6 +12,7 @@ app = dash.Dash(__name__)
 server = app.server
 
 client = Client('Example Client')
+
 app.layout = html.Div([
     html.H1('Tax Calculation Interactive Dashboard'),
     
@@ -42,13 +43,13 @@ app.layout = html.Div([
             min=0,
             max=1000000,
             step=1000,
-            value=65000,
+            value=0,
             marks={i: f'{i//1000}k' for i in range(0, 1000001, 100000)}
         ),
         dcc.Input(
             id='profit-on-sales-input',
             type='number',
-            value=65000,
+            value=0,
             min=0,
             max=1000000,
             step=1000,
@@ -57,13 +58,7 @@ app.layout = html.Div([
     ], style={'margin-top': 20}),
     html.Div(id='profit-on-sales-output', style={'margin-top': 20}),
     
-    dcc.Graph(id='tax-bar-chart'),
-    
-    dcc.Interval(
-        id='interval-component',
-        interval=1,  # in milliseconds
-        n_intervals=0  # only fires once
-    )
+    dcc.Graph(id='tax-bar-chart')
 ])
 
 @app.callback(
@@ -113,17 +108,11 @@ def sync_profit_on_sales(slider_value, input_value):
     [Input('other-uk-income-slider', 'value'),
      Input('profit-on-sales-slider', 'value'),
      Input('other-uk-income-input', 'value'),
-     Input('profit-on-sales-input', 'value'),
-     Input('interval-component', 'n_intervals')]
+     Input('profit-on-sales-input', 'value')]
 )
-def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income_input, profit_on_sales_input, n_intervals):
-    ctx = dash.callback_context
-    if not ctx.triggered or 'interval-component' in [trigger['prop_id'] for trigger in ctx.triggered]:
-        other_uk_income = 0
-        profit_on_sales = 65000
-    else:
-        other_uk_income = other_uk_income_input if other_uk_income_input is not None else other_uk_income_slider
-        profit_on_sales = profit_on_sales_input if profit_on_sales_input is not None else profit_on_sales_slider
+def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income_input, profit_on_sales_input):
+    other_uk_income = other_uk_income_input if other_uk_income_input is not None else other_uk_income_slider
+    profit_on_sales = profit_on_sales_input if profit_on_sales_input is not None else profit_on_sales_slider
     
     client.OtherUkIncome.set(other_uk_income)
     client.ProfitOnSales.set(profit_on_sales)
