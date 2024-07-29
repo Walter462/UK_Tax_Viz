@@ -8,11 +8,12 @@ def install(package):
     except ImportError:
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 # Libraries list to check and install if necessary
-libraries = ['pandas', 
-             'numpy', 
-             'openpyxl', 
-             'dash', 
-             'plotly']
+libraries = ['pandas',
+             'numpy',
+             'openpyxl',
+             'dash',
+             'plotly',
+             'gunicorn']
 for lib in libraries:
     install(lib)
 
@@ -26,4 +27,3 @@ import openpyxl as openpyxl
 import dash as dash
 from dash import dcc, html, Input, Output, State
 import plotly.graph_objects as go
-
