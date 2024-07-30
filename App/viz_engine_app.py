@@ -15,7 +15,7 @@ client = Client('Example Client')
 
 app.layout = html.Div([
     html.H1('Tax Calculation Interactive Dashboard'),
-    
+
     html.Div([
         dcc.Slider(
             id='other-uk-income-slider',
@@ -36,7 +36,7 @@ app.layout = html.Div([
         ),
     ], style={'margin-top': 20}),
     html.Div(id='other-uk-income-output', style={'margin-top': 20}),
-    
+
     html.Div([
         dcc.Slider(
             id='profit-on-sales-slider',
@@ -57,7 +57,7 @@ app.layout = html.Div([
         ),
     ], style={'margin-top': 20}),
     html.Div(id='profit-on-sales-output', style={'margin-top': 20}),
-    
+
     dcc.Graph(id='tax-bar-chart')
 ])
 
@@ -113,9 +113,16 @@ def sync_profit_on_sales(slider_value, input_value):
 def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income_input, profit_on_sales_input):
     other_uk_income = other_uk_income_input if other_uk_income_input is not None else other_uk_income_slider
     profit_on_sales = profit_on_sales_input if profit_on_sales_input is not None else profit_on_sales_slider
-    
+
     client.OtherUkIncome.set(other_uk_income)
     client.ProfitOnSales.set(profit_on_sales)
+
+    # Check for None data and Set Defaults
+    if client.OtherUkIncome.value is None:
+        client.OtherUkIncome.set(default_MoneyInputValue)
+    if client.ProfitOnSales.value is None:
+        client.ProfitOnSales.set(default_MoneyInputValue)
+
     client.DividendsTax.calculate()
     client.AssetsSalesTax.calculate()
 
@@ -196,7 +203,7 @@ def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income
                     showarrow=False,
                     font=dict(color='white')
                 ))
-    
+
     if less_tax_paid_at_source > 0:
         annotations.append(
             dict(
@@ -211,25 +218,25 @@ def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income
     # Add annotations for the total values
     annotations.extend([
         dict(
-            x='Dividends', 
-            y=0, 
-            text=f'Total: ${total_dividends_due:.2f}', 
+            x='Dividends',
+            y=0,
+            text=f'Total: ${total_dividends_due:.2f}',
             showarrow=False,
             font=dict(color='black'),
             yshift=-20
         ),
         dict(
-            x='Assets Sales', 
-            y=0, 
-            text=f'Total: ${total_assets_sales_due:.2f}', 
+            x='Assets Sales',
+            y=0,
+            text=f'Total: ${total_assets_sales_due:.2f}',
             showarrow=False,
             font=dict(color='black'),
             yshift=-20
         ),
         dict(
-            x='Dividends (After Less)', 
-            y=0, 
-            text=f'Total: ${less_tax_paid_at_source:.2f}', 
+            x='Dividends (After Less)',
+            y=0,
+            text=f'Total: ${less_tax_paid_at_source:.2f}',
             showarrow=False,
             font=dict(color='black'),
             yshift=-20
@@ -238,14 +245,14 @@ def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income
 
     figure = go.Figure(data=bars)
     figure.update_layout(
-        barmode='stack', 
-        title='Tax Breakdown', 
+        barmode='stack',
+        title='Tax Breakdown',
         yaxis_title='Amount ($USD)',
         annotations=annotations
     )
 
-    return (f'Other UK Income: ${other_uk_income}', 
-            f'Profit on Sales: ${profit_on_sales}', 
+    return (f'Other UK Income: ${other_uk_income}',
+            f'Profit on Sales: ${profit_on_sales}',
             figure)
 
 if __name__ == '__main__':

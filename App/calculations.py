@@ -1,17 +1,20 @@
 
 try:
-    from constants import (dividends_tax_rates_dict, 
+    from constants import (dividends_tax_rates_dict,
                         assets_sales_tax_rate_dict,
-                        default_MoneyInputValue) 
+                        default_MoneyInputValue)
 except ImportError:
-    pass 
+    pass
 
 #CALCULATIONS CORE
 class OtherUkIncome:    #Income from salary input C3
     def __init__(self):
         self.value = default_MoneyInputValue
     def set(self, value):
-        self.value = value
+        if isinstance(value, (int, float)):
+            self.value = value
+        else:
+            raise ValueError("Other UK income value must be a number (int or float).")
     def excel(self, df):
         self.value = float(df.loc[1, 'Unnamed: 2'])  # parse from excel C3
 
@@ -19,7 +22,10 @@ class ProfitOnSales:    #Profit on sales input C4
     def __init__(self):
         self.value = default_MoneyInputValue
     def set(self, value):
-        self.value = value
+        if isinstance(value,(int, float)):
+            self.value = value
+        else:
+            raise ValueError("Profit on sales value must be a number (int or float).")
     def excel(self, df):
         self.value = float(df.loc[2, 'Unnamed: 2'])  # parse from excel C4
 
@@ -46,7 +52,7 @@ class PersonalAllowance:
                         )
                 )
         self.personal_allowance_tax_due = self.personal_allowance_tax_base*\
-            self.thresholds_tax_rates_and_values.get("Personal allowance")['Tax rates']                
+            self.thresholds_tax_rates_and_values.get("Personal allowance")['Tax rates']
 
 class BasicRate:
     def __init__ (self, client, personal_allowance_tax_base,
@@ -80,12 +86,12 @@ class BasicRate:
                         - self.annual_exempt_amount
                 )
             )
-            
+
         self.basic_rate_tax_due = self.basic_rate_tax_base*\
             self.thresholds_tax_rates_and_values.get("Basic rate taxpayer threshold")['Tax rates']
 
 class HigherRate:
-    def __init__ (self, client, personal_allowance_tax_base, 
+    def __init__ (self, client, personal_allowance_tax_base,
                   basic_rate_tax_base,annual_exempt_amount,
                   thresholds_tax_rates_and_values):
         self.client = client
@@ -114,7 +120,7 @@ class HigherRate:
                         - self.annual_exempt_amount
                 )
             )
-            
+
         self.higher_rate_tax_due = self.higher_rate_tax_base*\
             self.thresholds_tax_rates_and_values.get("Higher rate threshold")['Tax rates']
 
@@ -139,14 +145,14 @@ class AdditionalRate:
                 self.personal_allowance_tax_base-\
                 self.annual_exempt_amount
             )
-            
+
         self.additional_rate_tax_due = self.additional_rate_tax_base*\
             self.thresholds_tax_rates_and_values.get("Additional rate threshold")['Tax rates']
 
 class DividendsTax:
     annual_exempt_amount = 0
     thresholds_tax_rates_and_values = dividends_tax_rates_dict
-    
+
     def __init__(self, client):
         self.client = client
         self.PersonalAllowance = PersonalAllowance(client, DividendsTax.thresholds_tax_rates_and_values)
@@ -157,7 +163,7 @@ class DividendsTax:
         self.dividends_tax_due_before_less = 0
         self.dividends_tax_base_total = 0
         self.less_tax_paid_at_source = 0
-    
+
     def calculate(self):
         self.PersonalAllowance.calculate()
         self.BasicRate.personal_allowance_tax_base = self.PersonalAllowance.personal_allowance_tax_base
@@ -183,7 +189,7 @@ class DividendsTax:
 class AssetsSalesTax:
     annual_exempt_amount = 3000
     thresholds_tax_rates_and_values = assets_sales_tax_rate_dict
-    
+
     def __init__(self, client):
         self.client = client
         self.PersonalAllowance = PersonalAllowance(client, AssetsSalesTax.thresholds_tax_rates_and_values)
@@ -192,7 +198,7 @@ class AssetsSalesTax:
         self.AdditionalRate = AdditionalRate(client, 0, 0, 0, AssetsSalesTax.annual_exempt_amount, AssetsSalesTax.thresholds_tax_rates_and_values)
         self.assets_sales_tax_due_total = 0
         self.assets_sales_tax_base_total = 0
-    
+
     def calculate(self):
         self.PersonalAllowance.calculate()
         self.BasicRate.personal_allowance_tax_base = self.PersonalAllowance.personal_allowance_tax_base
