@@ -1,2 +1,5 @@
 .DS_Store
 __pycache__/
+SANDBOX*
+requirements_file_offload*
+.vscode
