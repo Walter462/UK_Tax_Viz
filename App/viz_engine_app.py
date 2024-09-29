@@ -257,3 +257,4 @@ def update_chart(other_uk_income_slider, profit_on_sales_slider, other_uk_income
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+ 
